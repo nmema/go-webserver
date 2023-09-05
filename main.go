@@ -10,8 +10,15 @@ func main() {
 	const port = "8080"
 
 	mux := http.NewServeMux()
-	mux.Handle("/app/", http.StripPrefix("/app", http.FileServer(http.Dir(filepathRoot))))
+
+	apiCfg := apiConfig{
+		fileserverHits: 0,
+	}
+	handler := http.StripPrefix("/app", http.FileServer(http.Dir(filepathRoot)))
+
+	mux.Handle("/app/", apiCfg.middlewareMetricsInc(handler))
 	mux.HandleFunc("/healthz", handlerReadiness)
+	mux.HandleFunc("/metrics", apiCfg.handlerMetrics)
 	corsMux := middlewareCors(mux)
 
 	server := &http.Server{
