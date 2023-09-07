@@ -16,6 +16,7 @@ func main() {
 	apiCfg := apiConfig{
 		fileserverHits: 0,
 	}
+
 	fshandler := apiCfg.middlewareMetricsInc(
 		http.StripPrefix("/app", http.FileServer(http.Dir(filepathRoot))),
 	)
@@ -24,6 +25,7 @@ func main() {
 	router.Handle("/app/*", fshandler)
 	router.Get("/healthz", handlerReadiness)
 	router.Get("/metrics", apiCfg.handlerMetrics)
+	router.Get("/reset", apiCfg.handlerReset)
 
 	corsMux := middlewareCors(router)
 
