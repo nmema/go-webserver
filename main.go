@@ -11,21 +11,22 @@ func main() {
 	const filepathRoot = "."
 	const port = "8080"
 
-	router := chi.NewRouter()
-
 	apiCfg := apiConfig{
 		fileserverHits: 0,
 	}
 
+	router := chi.NewRouter()
 	fshandler := apiCfg.middlewareMetricsInc(
 		http.StripPrefix("/app", http.FileServer(http.Dir(filepathRoot))),
 	)
-
 	router.Handle("/app", fshandler)
 	router.Handle("/app/*", fshandler)
-	router.Get("/healthz", handlerReadiness)
-	router.Get("/metrics", apiCfg.handlerMetrics)
-	router.Get("/reset", apiCfg.handlerReset)
+
+	apiRouter := chi.NewRouter()
+	apiRouter.Get("/healthz", handlerReadiness)
+	apiRouter.Get("/metrics", apiCfg.handlerMetrics)
+	apiRouter.Get("/reset", apiCfg.handlerReset)
+	router.Mount("/api", apiRouter)
 
 	corsMux := middlewareCors(router)
 
